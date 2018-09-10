@@ -89,7 +89,7 @@ func resourceCloudflareZoneLockdownCreate(d *schema.ResourceData, meta interface
 	}
 
 	if urls, ok := d.GetOk("urls"); ok {
-		newZoneLockdown.URLs = expandInterfaceToStringList(urls)
+		newZoneLockdown.URLs = expandInterfaceToStringList(urls.(*schema.Set).List())
 	}
 
 	if configurations, ok := d.GetOk("configurations"); ok {
