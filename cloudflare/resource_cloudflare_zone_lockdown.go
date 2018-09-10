@@ -166,8 +166,6 @@ func resourceCloudflareZoneLockdownUpdate(d *schema.ResourceData, meta interface
 
 	var newZoneLockdown cloudflare.ZoneLockdown
 
-	newZoneLockdown.ID = d.Id()
-
 	if paused, ok := d.GetOk("paused"); ok {
 		newZoneLockdown.Paused = paused.(bool)
 	}
