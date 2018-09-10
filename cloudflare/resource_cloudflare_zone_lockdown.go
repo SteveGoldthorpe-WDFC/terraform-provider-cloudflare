@@ -31,7 +31,8 @@ func resourceCloudflareZoneLockdown() *schema.Resource {
 			},
 			"paused": {
 				Type:     schema.TypeBool,
-				Required: true,
+				Default:  false,
+				Optional: true,
 			},
 			"description": {
 				Type:         schema.TypeString,

@@ -38,6 +38,7 @@ The following arguments are supported:
 * `description` - (Optional) A descriptionabout the lockdown entry. Typically used as a reminder or explanation for the lockdown.
 * `urls` - (Required) A list of simple wildcard patterns to match requests against.
 * `configurations` - (Required) A list of IP addresses or IP ranges to match the request against.  IP addresses should just be standard IPv4 notation i.e. "198.51.100.4" and IP ranges limited to /16 and /24 i.e. "198.51.100.4/16".
+* `paused` - (Optional) Boolean of whether this zone lockdown is currently paused. Default: false.
 
 ## Attributes Reference
 
