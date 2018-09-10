@@ -164,36 +164,43 @@ func resourceCloudflareZoneLockdownUpdate(d *schema.ResourceData, meta interface
 	client := meta.(*cloudflare.API)
 	zoneID := d.Get("zone_id").(string)
 
-	newRule := cloudflare.AccessRule{
-		Notes: d.Get("notes").(string),
-		Mode:  d.Get("mode").(string),
+	var newZoneLockdown cloudflare.ZoneLockdown
+
+	newZoneLockdown.ID = d.Id()
+
+	if paused, ok := d.GetOk("paused"); ok {
+		newZoneLockdown.Paused = paused.(bool)
 	}
 
-	if configuration, configurationOk := d.GetOk("configuration"); configurationOk {
-		config := configuration.(map[string]interface{})
-
-		newRule.Configuration = cloudflare.AccessRuleConfiguration{
-			Target: config["target"].(string),
-			Value:  config["value"].(string),
-		}
+	if description, ok := d.GetOk("description"); ok {
+		newZoneLockdown.Description = description.(string)
 	}
 
-	// var accessRuleResponse *cloudflare.AccessRuleResponse
-	var err error
-
-	if zoneID == "" {
-		if client.OrganizationID != "" {
-			_, err = client.UpdateOrganizationAccessRule(client.OrganizationID, d.Id(), newRule)
-		} else {
-			_, err = client.UpdateUserAccessRule(d.Id(), newRule)
-		}
-	} else {
-		_, err = client.UpdateZoneAccessRule(zoneID, d.Id(), newRule)
+	if urls, ok := d.GetOk("urls"); ok {
+		newZoneLockdown.URLs = expandInterfaceToStringList(urls.(*schema.Set).List())
 	}
+
+	if configurations, ok := d.GetOk("configurations"); ok {
+		newZoneLockdown.Configurations = expandZoneLockdownConfig(configurations.(*schema.Set))
+	}
+
+	log.Printf("[INFO] Updating Cloudflare Zone Lockdown from struct: %+v", newZoneLockdown)
+
+	var r *cloudflare.ZoneLockdownResponse
+
+	r, err := client.UpdateZoneLockdown(zoneID, d.Id(), newZoneLockdown)
 
 	if err != nil {
-		return fmt.Errorf("Failed to update Access Rule: %s", err)
+		return fmt.Errorf("error updating zone lockdown for zone %q: %s", d.Get("zone").(string), err)
 	}
+
+	if r.Result.ID == "" {
+		return fmt.Errorf("failed to find id in Update response; resource was empty")
+	}
+
+	d.SetId(r.Result.ID)
+
+	log.Printf("[INFO] Cloudflare Zone Lockdown ID: %s", d.Id())
 
 	return resourceCloudflareZoneLockdownRead(d, meta)
 }
